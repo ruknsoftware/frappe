@@ -334,8 +334,7 @@ def get_communication_data(
 	return frappe.db.multisql(
 		{
 			"sqlite": sqlite_query,
-			"postgres": query,
-			"mariadb": query,
+			"*": query,
 		},
 		dict(
 			doctype=doctype,
@@ -481,8 +480,9 @@ def update_user_info(docinfo, doc=None):
 	users = set()
 
 	if doc:
-		users.add(doc.owner)
-		users.add(doc.modified_by)
+		for field in ("owner", "modified_by"):
+			if user := doc.get(field):
+				users.add(user)
 
 	users.update(d.sender for d in docinfo.communications)
 	users.update(d.user for d in docinfo.shared)
